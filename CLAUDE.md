@@ -1,41 +1,34 @@
 # CLAUDE.md — release-diff
 
-Projeto de portfólio (Pedro Salsman): compara dois releases de resultado trimestral de uma empresa listada na B3 e entrega um diff de guidance, tom da gestão, temas e alocação de capital — o que mudou e o que a empresa parou ou começou a dizer, cada achado com página e trecho literal. Todo número citado num achado segue a regra dos números abaixo. Parsing de tabelas de KPI fica para a v2.
+Projeto de portfólio (Pedro Salsman): compara dois releases de resultado trimestral de uma empresa da B3 e entrega um diff de guidance, tom da gestão, temas e alocação de capital, cada achado com página e trecho literal. Parsing de tabelas de KPI fica para a v2.
 
-## Mapa do repo
+## Leia antes de trabalhar
+
+- `claude/00-contexto-roadmap-principios.md` — contexto, stack e os princípios (números vêm do código; tudo auditável).
+- `claude/01-escopo-release-diff.md` — escopo, pipeline, schema e critérios de "pronto".
+- `claude/02-padrao-repo-readme.md` — estrutura de pastas e padrão de README.
+- `claude/03-log-de-progresso.md` — onde paramos. **Único quadro de handoff: leia ao começar, atualize ao terminar.**
+
+Se este arquivo e os docs divergirem, os docs mandam.
+
+## Mapa do repo (resumo; detalhe no doc 02)
 
 ```
-raw/       insumos baixados, NUNCA editados (PDFs de releases, planilhas da CVM)
-wiki/      conhecimento destilado: glossário de métricas, notas sobre cada empresa, decisões de parsing
-output/    o que o projeto entrega (diffs em .md/.html/.csv) — gerado, não escrito à mão
-src/       código Python
-tests/     testes (pytest)
-docs/      STATUS.md (handoff entre chats), DECISOES.md, ROTEAMENTO.md
+raw/     insumos baixados, NUNCA editados
+wiki/    notas por empresa, glossário, decisões de parsing
+output/  tudo que é gerado — não escrito à mão
+src/     código Python
+tests/   pytest
+docs/    DECISOES.md, ROTEAMENTO.md (qual modelo faz o quê)
 ```
-
-Comece toda sessão lendo `docs/STATUS.md`. Termine toda sessão atualizando ele.
 
 ## 4 regras de trabalho
 
-1. **Pense antes de codar.** Diga as premissas em voz alta. Se o pedido for ambíguo, pergunte — não escolha em silêncio.
-2. **Simples primeiro.** O mínimo de código que resolve. Nada de abstração, config ou feature "pra depois" que ninguém pediu.
-3. **Mudança cirúrgica.** Toque só no que o pedido exige. Não reformate, renomeie ou "melhore" código vizinho.
-4. **Defina o "pronto" e verifique.** Antes de começar, escreva como vamos saber que funcionou (um teste, um número conferido). Só diga "terminei" depois de rodar a verificação.
+1. **Pense antes de codar.** Diga as premissas. Se o pedido for ambíguo, pergunte.
+2. **Simples primeiro.** O mínimo de código que resolve; nada "pra depois".
+3. **Mudança cirúrgica.** Toque só no que o pedido exige.
+4. **Defina o "pronto" e verifique.** Só diga "terminei" depois de rodar a verificação.
 
-## Regra dos números (inegociável)
+## Números
 
-Projeto financeiro com número errado é projeto morto.
-
-- Todo número extraído de um release carrega a origem: arquivo, página e a linha/tabela de onde veio.
-- Nenhum número vai pro `output/` sem passar pela verificação: um segundo agente, que **não participou da extração**, confere cada valor contra o PDF original e marca ✅ / ❌.
-- Divergência de unidade (R$ mil × R$ milhões), período (3T × 9M) ou critério (ajustado × contábil) conta como erro, não como detalhe.
-- Na dúvida, o número sai como "não verificado" — nunca é chutado.
-
-## Stack
-
-- Python 3.11+, PyMuPDF (`import pymupdf`) para PDF, `pydantic` para schemas, `pytest` para testes.
-- Dados oficiais antes de scraping: preferir dados abertos da CVM / documentos do RI em PDF a raspar HTML.
-
-## Modelos
-
-Ver `docs/ROTEAMENTO.md` — o que vai pro Haiku/Sonnet e o que fica no Opus.
+Regra inegociável, detalhada no doc 00 (princípios 1–2): número vem do código, nunca do LLM; toda citação é validada contra o texto da página. Unidade, período ou critério trocado conta como erro. Na dúvida, o achado sai marcado como "não verificado".

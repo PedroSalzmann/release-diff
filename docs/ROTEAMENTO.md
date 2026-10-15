@@ -16,23 +16,23 @@ Regra geral: **o Opus decide e confere; Sonnet/Haiku executam tarefa fechada.** 
 ## Dois jeitos de delegar
 
 1. **Automático (preferido):** dentro do chat gestor, o Opus dispara um subagente com Sonnet/Haiku, recebe o resultado e confere. Você não copia nada.
-2. **Manual:** abre um chat novo no projeto com Sonnet e cola o pedido abaixo. Quando terminar, ele escreve o resultado no `docs/STATUS.md` (ou você cola a resposta de volta no chat gestor).
+2. **Manual:** abre um chat novo no projeto com Sonnet e cola o pedido abaixo. Quando terminar, ele registra o resultado no `claude/03-log-de-progresso.md` do Projeto (ou você cola a resposta de volta no chat gestor).
 
 ### Molde de pedido para um chat Sonnet
 
 ```
-Leia CLAUDE.md e docs/STATUS.md.
+Leia CLAUDE.md e claude/03-log-de-progresso.md.
 Tarefa: <uma frase>
 Entrada: <arquivos>
 Saída esperada: <formato exato, onde salvar>
 Pronto quando: <critério objetivo — ex.: pytest passa / CSV com N linhas>
 Não faça: <o que está fora do escopo>
-Ao terminar, adicione uma linha ao Log do docs/STATUS.md.
+Ao terminar, adicione uma linha ao histórico do claude/03-log-de-progresso.md.
 ```
 
 ## Economia de token — hábitos
 
 - Plan mode antes de codar qualquer coisa com mais de um arquivo.
 - Effort baixo em tarefa trivial; alto só em decisão e verificação.
-- Chat novo por tarefa; o contexto vive nos arquivos (CLAUDE.md, STATUS.md), não no histórico do chat.
+- Chat novo por tarefa; o contexto vive nos arquivos (CLAUDE.md, 03-log), não no histórico do chat.
 - Não colar PDF inteiro no chat: deixar em `raw/` e pedir só a página/tabela.
