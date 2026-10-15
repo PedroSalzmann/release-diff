@@ -72,3 +72,25 @@ class ReleaseExtraction(BaseModel):
     tone_signals: list[ToneSignal]
     themes: list[Theme]
     capital_allocation: list[CapitalAllocationItem]
+
+
+class GuidanceChange(BaseModel):
+    metric: str
+    change_type: Literal["maintained", "raised", "lowered", "new", "withdrawn", "not_comparable", "not_verified"]
+    delta: float | None = None
+    notes: list[str] = Field(default_factory=list)
+    prev: GuidanceItem | None = None
+    curr: GuidanceItem | None = None
+
+
+class ToneShift(BaseModel):
+    dimension_shifts: dict[str, Literal["improved", "worsened", "unchanged"]]
+    label: Literal["more_optimistic", "more_cautious", "stable", "insufficient_evidence"]
+    forward_counts: tuple[int, int]
+
+
+class ThemeStatus(BaseModel):
+    name: str
+    status: Literal["new", "dropped", "mentioned_before", "less_prominent", "not_verified"]
+    useful_keywords: list[str]
+    theme: Theme
