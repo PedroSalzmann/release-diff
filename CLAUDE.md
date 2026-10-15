@@ -1,34 +1,46 @@
 # CLAUDE.md — release-diff
 
-Projeto de portfólio (Pedro Salsman): compara dois releases de resultado trimestral de uma empresa da B3 e entrega um diff de guidance, tom da gestão, temas e alocação de capital, cada achado com página e trecho literal. Parsing de tabelas de KPI fica para a v2.
+Compares two consecutive quarterly earnings releases of a B3-listed company and reports what changed in guidance, management tone, themes and capital allocation. Every finding points to a page and a verbatim quote. Parsing KPI tables is out of scope for the MVP.
 
-## Leia antes de trabalhar
+## Principles
 
-- `claude/00-contexto-roadmap-principios.md` — contexto, stack e os princípios (números vêm do código; tudo auditável).
-- `claude/01-escopo-release-diff.md` — escopo, pipeline, schema e critérios de "pronto".
-- `claude/02-padrao-repo-readme.md` — estrutura de pastas e padrão de README.
-- `claude/03-log-de-progresso.md` — onde paramos. **Único quadro de handoff: leia ao começar, atualize ao terminar.**
+1. **Numbers come from code, never from the LLM.** The LLM extracts and pairs; code compares numbers and classifies changes.
+2. **Everything is auditable.** Every finding carries page + verbatim quote, and code checks that the quote exists on that page (`src/validate.py`). Items that fail are kept and flagged `verified=False` with `issues`, never silently dropped. When in doubt, the item is "not verified".
+3. **Pipeline, not agent.** Fixed steps: extract text → LLM structured extraction (one call per release) → LLM pairing of leftovers → code classification and validation → render.
+4. **Small and finished first.** MVP vs v2 is explicit; nothing "for later".
 
-Se este arquivo e os docs divergirem, os docs mandam.
-
-## Mapa do repo (resumo; detalhe no doc 02)
+## Pipeline and code
 
 ```
-raw/     insumos baixados, NUNCA editados
-wiki/    notas por empresa, glossário, decisões de parsing
-output/  tudo que é gerado — não escrito à mão
-src/     código Python
-tests/   pytest
-docs/    DECISOES.md, ROTEAMENTO.md (qual modelo faz o quê)
+raw/<TICKER>/<YYYY>Q<n>_release.pdf      input PDFs, never edited
+  └─ src/extract.py   PyMuPDF blocks, reading order column → y      → output/<TICKER>/<period>_pages.json
+  └─ prompts/extract_release.md   LLM structured extraction         → ReleaseExtraction (src/schemas.py)
+  └─ src/validate.py  quote on page, numbers in quote, theme keywords
+  └─ src/compare.py   guidance classes, sentence diff, tone and theme status
 ```
 
-## 4 regras de trabalho
+Key rules implemented in code (rationale in `docs/DECISOES.md`):
+- **Guidance** = explicit quantitative target (value, range, floor or ceiling) for a future period. Paired by metric + period + perimeter. Classes: maintained / raised / lowered (midpoint or the existing bound) / new / withdrawn / not_comparable / not_verified. `withdrawn`/`new` only if no projection sentence in the other release mentions the metric.
+- **Tone** = change per dimension in forward-looking sentences that changed between releases; overall label by rule; fewer than 3 forward signals on either side → `insufficient_evidence`.
+- **Theme** = specific, nameable topic; `new`/`dropped` confirmed only if none of its specific keywords appears in the other release.
 
-1. **Pense antes de codar.** Diga as premissas. Se o pedido for ambíguo, pergunte.
-2. **Simples primeiro.** O mínimo de código que resolve; nada "pra depois".
-3. **Mudança cirúrgica.** Toque só no que o pedido exige.
-4. **Defina o "pronto" e verifique.** Só diga "terminei" depois de rodar a verificação.
+## Repo map
 
-## Números
+```
+raw/      input PDFs (never edited)
+wiki/     per-company notes and parsing gotchas
+output/   generated files only
+prompts/  versioned LLM prompts
+src/      code
+tests/    pytest (+ tests/fixtures)
+docs/     DECISOES.md (decision log), ROTEAMENTO.md (which model does what)
+```
 
-Regra inegociável, detalhada no doc 00 (princípios 1–2): número vem do código, nunca do LLM; toda citação é validada contra o texto da página. Unidade, período ou critério trocado conta como erro. Na dúvida, o achado sai marcado como "não verificado".
+## Working rules
+
+1. **Think before coding.** State assumptions; ask when the request is ambiguous.
+2. **Simple first.** Minimum code that solves the task.
+3. **Surgical changes.** Touch only what the task requires.
+4. **Define "done" and verify.** Only say "done" after running the check (`python3 -m pytest -q`).
+
+Code, identifiers, commits and README in English. Never commit `.env` or API keys.
